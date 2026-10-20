@@ -1,0 +1,19 @@
+{
+  "products": [
+    {
+      "name": "ZARA COAT 3",
+      "expectedPrice": "$ 11500"
+    },
+    {
+      "name": "ADIDAS ORIGINAL",
+      "expectedPrice": "$ 11500"
+    },
+    {
+      "name": "iphone 13 pro",
+      "expectedPrice": "$ 55000"
+    }
+  ],
+  "productsToAdd": ["ZARA COAT 3", "ADIDAS ORIGINAL"],
+  "singleProduct": "iphone 13 pro",
+  "removeProduct": "ZARA COAT 3"
+}

@@ -1,0 +1,11 @@
+{
+  "shipping": {
+    "country": "India"
+  },
+  "payment": {
+    "cvv": "123",
+    "nameOnCard": "Test User",
+    "month": "12",
+    "day": "25"
+  }
+}
