@@ -52,9 +52,19 @@ class DataLoader {
   private static instance: DataLoader;
   private dataPath: string;
 
+  // Cached fixtures loaded once at startup
+  private cachedUsers: UsersData | null = null;
+  private cachedProducts: ProductsData | null = null;
+  private cachedCheckout: CheckoutData | null = null;
+
   private constructor() {
     // Use path to src/tests/inputData (from src/main/utils go up to src, then tests/inputData)
     this.dataPath = path.resolve(__dirname, '../../tests/inputData');
+
+    // Load and cache all fixtures at startup
+    this.cachedUsers = this.loadJson<UsersData>('users.json');
+    this.cachedProducts = this.loadJson<ProductsData>('products.json');
+    this.cachedCheckout = this.loadJson<CheckoutData>('checkout.json');
   }
 
   static getInstance(): DataLoader {
@@ -71,15 +81,24 @@ class DataLoader {
   }
 
   getUsers(): UsersData {
-    return this.loadJson<UsersData>('users.json');
+    if (!this.cachedUsers) {
+      this.cachedUsers = this.loadJson<UsersData>('users.json');
+    }
+    return this.cachedUsers;
   }
 
   getProducts(): ProductsData {
-    return this.loadJson<ProductsData>('products.json');
+    if (!this.cachedProducts) {
+      this.cachedProducts = this.loadJson<ProductsData>('products.json');
+    }
+    return this.cachedProducts;
   }
 
   getCheckout(): CheckoutData {
-    return this.loadJson<CheckoutData>('checkout.json');
+    if (!this.cachedCheckout) {
+      this.cachedCheckout = this.loadJson<CheckoutData>('checkout.json');
+    }
+    return this.cachedCheckout;
   }
 }
 

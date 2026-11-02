@@ -12,9 +12,9 @@ export class ProductsPage extends BasePage {
         super(page);
         this.productCards = page.locator('.card');
         this.productTitles = page.locator('.card-body b');
-        this.addToCartButtons = page.locator('button:has-text("Add To Cart")');
+        this.addToCartButtons = page.getByRole('button', { name: 'Add To Cart' });
         this.cartButton = page.locator('button[routerlink*="cart"]');
-        this.cartBadge = page.locator('button[routerlink*="cart"] label');
+        this.cartBadge = page.getByRole('button', { name: /cart/i }).locator('label');
     }
 
     async openProductsPage() {
@@ -32,12 +32,11 @@ export class ProductsPage extends BasePage {
 
     async addProductToCart(productName: string) {
         const productCard = this.productCards.filter({ hasText: productName });
-        const addToCartBtn = productCard.locator('button:has-text("Add To Cart")');
+        const addToCartBtn = productCard.getByRole('button', { name: 'Add To Cart' });
         await addToCartBtn.click();
         // Wait for toast notification
         await this.page.waitForSelector('.toast-container', { state: 'visible', timeout: 10000 });
         await this.page.waitForSelector('.toast-container', { state: 'hidden', timeout: 10000 });
-        await this.page.waitForTimeout(1000);
     }
 
     async addMultipleProductsToCart(productNames: string[]) {
@@ -60,5 +59,9 @@ export class ProductsPage extends BasePage {
     async isProductVisible(productName: string): Promise<boolean> {
         const productCard = this.productCards.filter({ hasText: productName });
         return await productCard.isVisible();
+    }
+
+    async getProductCardByName(productName: string) {
+        return this.productCards.filter({ hasText: productName });
     }
 }

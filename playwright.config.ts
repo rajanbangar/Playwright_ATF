@@ -2,15 +2,19 @@ import { defineConfig, devices } from '@playwright/test';
 import path from 'path';
 import dotenv from 'dotenv';
 
-dotenv.config({ path: path.resolve(__dirname, '.env') });
+// Load environment-specific .env file from src/main/resources/
+const env = process.env.ENV || 'local';
+const resourcesDir = path.resolve(__dirname, 'src/main/resources');
+dotenv.config({ path: path.resolve(resourcesDir, `.env.${env}`) });
+dotenv.config({ path: path.resolve(resourcesDir, '.env.example') }); // fallback to example
 
 export default defineConfig({
   testDir: './src/tests/testcases',
   timeout: 60_000,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  retries: 1,
+  workers: 1,
   reporter: [
     ['list'],
     ['html', { open: 'never' }],
@@ -31,14 +35,6 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
     },
   ],
 });

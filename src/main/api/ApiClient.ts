@@ -40,6 +40,42 @@ export class ApiClient {
         };
     }
 
+    async put<T>(path: string, data: unknown, headers?: Record<string, string>) {
+        const response = await this.requestContext.put(path, {
+            data,
+            headers,
+        });
+
+        return {
+            status: response.status(),
+            body: (await response.json()) as T,
+            response,
+        };
+    }
+
+    async patch<T>(path: string, data: unknown, headers?: Record<string, string>) {
+        const response = await this.requestContext.patch(path, {
+            data,
+            headers,
+        });
+
+        return {
+            status: response.status(),
+            body: (await response.json()) as T,
+            response,
+        };
+    }
+
+    async delete<T>(path: string, headers?: Record<string, string>) {
+        const response = await this.requestContext.delete(path, { headers });
+
+        return {
+            status: response.status(),
+            body: (await response.json()) as T,
+            response,
+        };
+    }
+
     async close() {
         await this.requestContext.dispose();
     }

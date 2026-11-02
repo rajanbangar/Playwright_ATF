@@ -1,62 +1,44 @@
-import { test, expect } from '@playwright/test';
-import { ApiClient } from '../../../main/api/ApiClient';
+import { test, expect } from '../../../main/fixtures/test-fixtures';
 
-test.describe('API Tests - JSONPlaceholder', () => {
-    test('GET /posts returns a populated list', async () => {
-        const api = await ApiClient.create('https://jsonplaceholder.typicode.com');
-
-        try {
-            const result = await api.get<Array<{ id: number; title: string; body: string }>>('/posts');
+test.describe('API Tests - JSONPlaceholder', { tag: ['@regression'] }, () => {
+    test('GET /posts returns a populated list', { tag: ['@regression'] },
+        async ({ apiClient }) => {
+            const result = await apiClient.get<Array<{ id: number; title: string; body: string }>>('/posts');
 
             expect(result.status).toBe(200);
             expect(result.body.length).toBeGreaterThan(0);
             expect(result.body[0]).toHaveProperty('id');
             expect(result.body[0]).toHaveProperty('title');
-        } finally {
-            await api.close();
-        }
-    });
+        });
 
-    test('POST /posts creates a new resource', async () => {
-        const api = await ApiClient.create('https://jsonplaceholder.typicode.com');
-
-        try {
+    test('POST /posts creates a new resource', { tag: ['@regression'] },
+        async ({ apiClient }) => {
             const payload = {
                 title: 'Playwright API test',
                 body: 'This is a sample API payload',
                 userId: 1,
             };
 
-            const result = await api.post<{ id: number; title: string; body: string; userId: number }>('/posts', payload);
+            const result = await apiClient.post<{ id: number; title: string; body: string; userId: number }>('/posts', payload);
 
             expect(result.status).toBe(201);
             expect(result.body.title).toBe(payload.title);
             expect(result.body.userId).toBe(payload.userId);
             expect(result.body.id).toBeGreaterThan(0);
-        } finally {
-            await api.close();
-        }
-    });
+        });
 
-    test('GET /posts/1 returns specific post', async () => {
-        const api = await ApiClient.create('https://jsonplaceholder.typicode.com');
-
-        try {
-            const result = await api.get<{ id: number; title: string; body: string; userId: number }>('/posts/1');
+    test('GET /posts/1 returns specific post', { tag: ['@regression'] },
+        async ({ apiClient }) => {
+            const result = await apiClient.get<{ id: number; title: string; body: string; userId: number }>('/posts/1');
 
             expect(result.status).toBe(200);
             expect(result.body.id).toBe(1);
             expect(result.body.title).toBeTruthy();
             expect(result.body.body).toBeTruthy();
-        } finally {
-            await api.close();
-        }
-    });
+        });
 
-    test('PUT /posts/1 simulates update (JSONPlaceholder returns 200 with updated data)', async () => {
-        const api = await ApiClient.create('https://jsonplaceholder.typicode.com');
-
-        try {
+    test('PUT /posts/1 simulates update', { tag: ['@regression'] },
+        async ({ apiClient }) => {
             const payload = {
                 id: 1,
                 title: 'Updated title',
@@ -64,18 +46,33 @@ test.describe('API Tests - JSONPlaceholder', () => {
                 userId: 1,
             };
 
-            // JSONPlaceholder simulates PUT - it returns 200 with the updated data but doesn't persist
-            const result = await api.post<{ id: number; title: string; body: string; userId: number }>('/posts/1', payload);
+            const result = await apiClient.put<{ id: number; title: string; body: string; userId: number }>('/posts/1', payload);
 
-            // JSONPlaceholder actually returns 200 for PUT but we use POST in our client
-            // Let's test with the correct method - use PUT if available, or accept the simulation
             expect([200, 201, 404]).toContain(result.status);
             if (result.status === 200) {
                 expect(result.body.title).toBe(payload.title);
                 expect(result.body.body).toBe(payload.body);
             }
-        } finally {
-            await api.close();
-        }
-    });
+        });
+
+    test('PATCH /posts/1 partial update', { tag: ['@regression'] },
+        async ({ apiClient }) => {
+            const payload = {
+                title: 'Partially updated title',
+            };
+
+            const result = await apiClient.patch<{ id: number; title: string; body: string; userId: number }>('/posts/1', payload);
+
+            expect([200, 201, 404]).toContain(result.status);
+            if (result.status === 200) {
+                expect(result.body.title).toBe(payload.title);
+            }
+        });
+
+    test('DELETE /posts/1 deletes resource', { tag: ['@regression'] },
+        async ({ apiClient }) => {
+            const result = await apiClient.delete<{ id: number }>('/posts/1');
+
+            expect([200, 204, 404]).toContain(result.status);
+        });
 });

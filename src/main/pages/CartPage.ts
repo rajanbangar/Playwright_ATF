@@ -6,15 +6,13 @@ export class CartPage extends BasePage {
     readonly cartProductTitles: Locator;
     readonly checkoutButton: Locator;
     readonly continueShoppingButton: Locator;
-    readonly removeButtons: Locator;
 
     constructor(page: Page) {
         super(page);
-        this.cartItems = page.locator('.cartSection');
+        this.cartItems = page.getByRole('listitem').filter({ has: page.locator('.cartSection') });
         this.cartProductTitles = page.locator('.cartSection h3');
-        this.checkoutButton = page.locator('button:has-text("Checkout")');
-        this.continueShoppingButton = page.locator('button:has-text("Continue Shopping")');
-        this.removeButtons = page.locator('.removeWrap');
+        this.checkoutButton = page.getByRole('button', { name: 'Checkout' });
+        this.continueShoppingButton = page.getByRole('button', { name: 'Continue Shopping' });
     }
 
     async openCartPage() {
@@ -49,20 +47,23 @@ export class CartPage extends BasePage {
     }
 
     async removeProduct(productName: string) {
-        // Find the index of the product in the cart
-        const titles = await this.getCartProductTitles();
-        const productIndex = titles.findIndex(title => title.includes(productName));
-        
-        if (productIndex === -1) {
+        // Find the cart item containing the product name
+        const productItem = this.cartItems.filter({ hasText: productName });
+
+        if (!(await productItem.isVisible())) {
             throw new Error(`Product "${productName}" not found in cart`);
         }
 
-        // Each product has 3 cartSections: product info, price, buy now
-        // The remove button (.removeWrap) is in the "Buy Now" section (3rd section per product)
-        const removeBtn = this.removeButtons.nth(productIndex);
+        // Remove button within the specific product item (delete button has btn-danger class)
+        const removeBtn = productItem.locator('button.btn-danger').first();
         await removeBtn.waitFor({ state: 'visible', timeout: 10000 });
         await removeBtn.click();
-        await this.waitForLoadState();
+        // Wait for product title to be removed from the cart DOM
+        await this.page.waitForFunction((name) => {
+            const titles = Array.from(document.querySelectorAll('.cartSection h3'));
+            return !titles.some(t => t.textContent?.includes(name));
+        }, productName, { timeout: 10000 });
+        await this.page.waitForLoadState('networkidle');
     }
 
     async proceedToCheckout() {
